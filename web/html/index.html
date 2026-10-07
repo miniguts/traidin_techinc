@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Веб-сайт в Docker</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <header class="hero">
+    <div class="container">
+      <span class="badge">🐳 Docker · Nginx · Flask · Redis</span>
+      <h1 id="site-title">Веб-сайт в Docker</h1>
+      <p class="lead">
+        Собственный HTML/CSS-сайт, который отдаёт Nginx из Docker-контейнера.
+        Рядом работают API на Flask и база Redis — всё поднимается одной командой
+        <code>docker compose up</code>.
+      </p>
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-value" id="visits">—</span>
+          <span class="stat-label">посещений (хранится в Redis)</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="env">—</span>
+          <span class="stat-label">APP_ENV из файла .env</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value small" id="api-host">—</span>
+          <span class="stat-label">hostname контейнера API</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section>
+      <h2>Архитектура</h2>
+      <div class="arch">
+        <div class="node host">
+          <strong>Браузер</strong>
+          <span>localhost:8080</span>
+        </div>
+        <div class="arrow">→<small>ports</small></div>
+        <div class="node">
+          <strong>web</strong>
+          <span>nginx:alpine</span>
+          <em>сеть frontend</em>
+        </div>
+        <div class="arrow">→<small>/api/</small></div>
+        <div class="node">
+          <strong>api</strong>
+          <span>python:3.12 + Flask</span>
+          <em>frontend + backend</em>
+        </div>
+        <div class="arrow">→<small>6379</small></div>
+        <div class="node">
+          <strong>redis</strong>
+          <span>redis:7-alpine</span>
+          <em>сеть backend · volume</em>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Что используется</h2>
+      <div class="cards">
+        <article class="card"><h3>📦 Контейнеры</h3><p>Три сервиса: <b>web</b>, <b>api</b>, <b>redis</b>.</p></article>
+        <article class="card"><h3>📝 Dockerfile</h3><p>Собственные образы для Nginx-сайта и для API.</p></article>
+        <article class="card"><h3>🧩 Docker Compose</h3><p>Один файл <code>docker-compose.yml</code> описывает весь стек.</p></article>
+        <article class="card"><h3>🌐 Network</h3><p><code>frontend</code> и изолированная <code>backend</code> (internal).</p></article>
+        <article class="card"><h3>💾 Volume</h3><p><code>redis_data</code> — данные, <code>web_logs</code> — логи Nginx.</p></article>
+        <article class="card"><h3>🔌 Порты</h3><p>Наружу проброшен только Nginx: <code>${WEB_PORT}:80</code>.</p></article>
+        <article class="card"><h3>⚙️ .env</h3><p>Порты, пароль Redis, режим и заголовок сайта.</p></article>
+      </div>
+    </section>
+
+    <section>
+      <h2>Гостевая книга</h2>
+      <p class="muted">Сообщения сохраняются в Redis на Docker Volume — они переживут
+        <code>docker compose down</code> и повторный запуск.</p>
+      <form id="guestbook-form" class="form">
+        <input id="name" type="text" maxlength="40" placeholder="Ваше имя">
+        <textarea id="text" maxlength="300" placeholder="Сообщение" required></textarea>
+        <button type="submit">Отправить</button>
+        <span id="form-status" class="muted"></span>
+      </form>
+      <ul id="messages" class="messages"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">Учебный проект «Веб-сайт в Docker» · статус API: <span id="api-status">проверка…</span></div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
